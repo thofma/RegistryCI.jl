@@ -84,6 +84,13 @@ function test(path = pwd();
                 # Test that the way Pkg loads this data works
                 Test.@test Pkg.Operations.load_package_data_raw(Base.UUID, depsfile) isa
                     Dict{Pkg.Types.VersionRange,Dict{String,Base.UUID}}
+                # Make sure the content roundtrips through decompression/compression
+                compressed = RegistryTools.Compress.compress(depsfile,
+                    RegistryTools.Compress.load(depsfile))
+                if compressed != deps
+                    @error "deps failed for " depsfile
+                end
+                # Test.@test compressed == deps
             end
 
             # Compat.toml testing
@@ -100,6 +107,13 @@ function test(path = pwd();
                 # Test that the way Pkg loads this data works
                 Test.@test Pkg.Operations.load_package_data_raw(Pkg.Types.VersionSpec, compatfile) isa
                     Dict{Pkg.Types.VersionRange,Dict{String,Pkg.Types.VersionSpec}}
+                # Make sure the content roundtrips through decompression/compression
+                compressed = RegistryTools.Compress.compress(compatfile,
+                    RegistryTools.Compress.load(compatfile))
+                if compressed != compat
+                    @error "compat failed for " compatfile
+                end
+                # Test.@test compressed == compat
             end
         end
     end end
